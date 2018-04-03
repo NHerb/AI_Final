@@ -1,8 +1,14 @@
 #ifndef BOARD_REPRESENTATION_H
 #define BOARD_REPRESENTATION_H
 
-const int ROWS = 3;
-const int COLUMNS = 5;
+enum {
+   EMPTY, 
+   WHITE,
+   BLACK
+};
+
+const int ROWS = 5;
+const int COLUMNS = 3;
 const int STARTING_PAWNS = 3;
 
 /*******************************************************************
@@ -17,9 +23,9 @@ const int STARTING_PAWNS = 3;
 
 
 struct game_state{
-   int state[COLUMNS][ROWS];
-   int player1_remaining_pawns;
-   int player2_remaining_pawns;
+   int state[ROWS][COLUMNS];
+   int white_remaining_pawns;
+   int black_remaining_pawns;
 };
 
 #endif
