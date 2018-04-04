@@ -11,23 +11,28 @@ int main(){
    int human_id = 0;
 
    // Uncomment any line to test basic win states.
-   //board.white_remaining_pawns = 0;        // Black Wins
-   //board.black_remaining_pawns = 0;        // White Wins
-   //board.state[0][0] = WHITE;              // White wins
-   //board.state[ROWS - 1][0] = BLACK;       // Black wins
+   //board.white_remaining_pawns = 0;        // Black Wins by full capture
+   //board.black_remaining_pawns = 0;        // White Wins by full capture
+   //board.state[0][0] = WHITE;              // White wins by finish line
+   //board.state[ROWS - 1][0] = BLACK;       // Black wins by finish line
+   bool verbose_mode = true;
 
    print_state(board);
 
 
 
+   int results = is_game_over(board, verbose_mode);
 
-
-   if (is_game_over(board) == WHITE)
+   if (results == WHITE)
       cout << "White wins!" << endl;
-   else if (is_game_over(board) == BLACK)
+   else if (results == BLACK)
       cout << "Black wins!" << endl;
+   else if (results == -1)
+      cout << "Game unfinished." << endl;
+   else if (results == 0)
+      cout << "Draw." << endl;
    else
-      cout << "No winner." << endl;
+      cout << "PANIC" << endl;
 
 /*
    while (human_id != 1 and human_id != 2){
