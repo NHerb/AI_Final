@@ -1,4 +1,5 @@
 #include "board_representation.h"
+#include "game.h"
 #include <vector>
 #include <iostream>
 
@@ -23,6 +24,8 @@ void init_board(game_state* board){
 
 void print_state(game_state board){
    cout << endl;
+   cout << "White Pawns Remaining: " << board.white_remaining_pawns << endl;
+   cout << "Black Pawns Remaining: " << board.black_remaining_pawns << endl;
    for (int i = 0; i < ROWS; i++){
       cout << "\t";
       for (int j = 0; j < COLUMNS; j++){
@@ -34,7 +37,7 @@ void print_state(game_state board){
 
 
 // Return ID of winning player, 0 if draw, -1 if incomplete
-int is_game_over(game_state board, bool verbose_mode){
+int is_game_over(game_state board, int current_player){
 
    // Win on capturing all enemy pawns
    if (board.white_remaining_pawns == 0)
@@ -52,49 +55,83 @@ int is_game_over(game_state board, bool verbose_mode){
          return BLACK;
 
 
-   // NOTE: once generate_children() is implemented (which probably will just use this code), 
-   // we can simply check the size of children states for the current player - lose on 0 child states
 
    // Losing game (can't make any moves & no captures possible)
-   bool black_valid_moves_remaining = false;
-   bool white_valid_moves_remaining = false;
+   vector<game_state> children;
+   children = generate_children(board, current_player);
+
+for (auto i : children)
+   print_state(i);
+
+
+   if (current_player == BLACK and children.size() == 0)
+      return WHITE;
+   else if (current_player == WHITE and children.size() == 0)
+      return BLACK;
+
+
+   return -1;    // Game incomplete
+}
+
+// UNTESTED
+vector<game_state> generate_children(game_state board, int current_player){
+   vector<game_state> list_of_children;
+
    for (int i = 0; i < ROWS; i++){       
       for (int j = 0; j < COLUMNS; j++){
-         // check space for white/black - if there's a valid move, flag and move one
-         if (board.state[i][j] == BLACK and !black_valid_moves_remaining){
-if (verbose_mode) cout << "black at " << i << "," << j << ".  Below: " << board.state[i+1][j] << endl;
+         game_state child;
+         child = board;
+         // check space for white/black - if there's a valid move, add and move one
+         if (board.state[i][j] == BLACK and current_player == BLACK){
             if (board.state[i+1][j] == EMPTY){         // Shouldn't go OOB - black can't reach bottom without winning (see above code)
-               black_valid_moves_remaining = true;
-if (verbose_mode) cout << "black can move down from " << i << "," << j << endl;
+               child.state[i][j] = EMPTY;
+               child.state[i+1][j] = BLACK;
+               list_of_children.push_back(child);
             } else {
                // Need to check for capture possibilities on valid moves
                if (j != 0){
                   // Check down-left space 
                   if (board.state[i+1][j-1] == WHITE)
-                     black_valid_moves_remaining = true;
+                     child = board;
+                     child.state[i][j] = EMPTY;
+                     child.state[i+1][j-1] = BLACK;
+                     child.white_remaining_pawns--;
+                     list_of_children.push_back(child);
                }
                if (j != COLUMNS - 1){
                   // Check down-right space
                   if (board.state[i+1][j+1] == WHITE)
-                     black_valid_moves_remaining = true;
+                     child = board;
+                     child.state[i][j] = EMPTY;
+                     child.state[i+1][j+1] = BLACK;
+                     child.white_remaining_pawns--;
+                     list_of_children.push_back(child);
                }
             }
-         } else if (board.state[i][j] == WHITE and !white_valid_moves_remaining){
- if (verbose_mode) cout << "white at " << i << "," << j << ".  Above: " << board.state[i-1][j] << endl;
+         } else if (board.state[i][j] == WHITE and current_player == WHITE){
             if (board.state[i-1][j] == EMPTY){          // Similarly, won't go OOB as white cannot reach botton without winning 
-               white_valid_moves_remaining = true;
- if (verbose_mode) cout << "white can move up from " << i << "," << j << endl;
+               child.state[i][j] = EMPTY;
+               child.state[i-1][j] = WHITE;
+               list_of_children.push_back(child);
             } else {
                // Check capture possibilities
                if (j != 0){
                   // Check up-left space 
                   if (board.state[i-1][j-1] == WHITE)
-                     white_valid_moves_remaining = true;
+                     child = board;
+                     child.state[i][j] = EMPTY;
+                     child.state[i-1][j-1] = WHITE;
+                     child.black_remaining_pawns--;
+                     list_of_children.push_back(child);
                }
                if (j != COLUMNS - 1){
                   // Check up-right space
                   if (board.state[i-1][j+1] == WHITE)
-                     white_valid_moves_remaining = true;
+                     child = board;
+                     child.state[i][j] = EMPTY;
+                     child.state[i-1][j+1] = WHITE;
+                     child.black_remaining_pawns--;
+                     list_of_children.push_back(child);
                }
 
             }
@@ -102,20 +139,8 @@ if (verbose_mode) cout << "black can move down from " << i << "," << j << endl;
       }
    }
 
-   if (!black_valid_moves_remaining and !white_valid_moves_remaining)
-      return 0;   // Draw
 
-   if (!black_valid_moves_remaining)
-      return WHITE;
 
-   if (!white_valid_moves_remaining)
-      return BLACK;
-
-   return -1;    // Game incomplete
-}
-
-vector<game_state> generate_children(game_state parent_state){
-   vector<game_state> list_of_children;
 
    return list_of_children;
 }

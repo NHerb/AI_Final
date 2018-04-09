@@ -15,13 +15,18 @@ int main(){
    //board.black_remaining_pawns = 0;        // White Wins by full capture
    //board.state[0][0] = WHITE;              // White wins by finish line
    //board.state[ROWS - 1][0] = BLACK;       // Black wins by finish line
-   bool verbose_mode = true;
 
    print_state(board);
 
 
+   while (human_id != 1 and human_id != 2){
+      cout << "Choose to be Player 1 (move first) or Player 2 (move second)." << endl;
+      cin >> human_id;
+   }
 
-   int results = is_game_over(board, verbose_mode);
+
+
+   int results = is_game_over(board, WHITE);
 
    if (results == WHITE)
       cout << "White wins!" << endl;
@@ -34,12 +39,6 @@ int main(){
    else
       cout << "PANIC" << endl;
 
-/*
-   while (human_id != 1 and human_id != 2){
-      cout << "Choose to be Player 1 (move first) or Player 2 (move second)." << endl;
-      cin >> human_id;
-   }
-*/
 
 
    return 0;

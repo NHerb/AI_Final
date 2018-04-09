@@ -10,7 +10,7 @@ enum {
 // You can edit rows/columns to resize the game.  It works!
 const int ROWS = 5;
 const int COLUMNS = 3;
-const int STARTING_PAWNS = ROWS;
+const int STARTING_PAWNS = COLUMNS;
 
 /*******************************************************************
 
