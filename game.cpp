@@ -60,9 +60,6 @@ int is_game_over(game_state board, int current_player){
    vector<game_state> children;
    children = generate_children(board, current_player);
 
-for (auto i : children)
-   print_state(i);
-
 
    if (current_player == BLACK and children.size() == 0)
       return WHITE;

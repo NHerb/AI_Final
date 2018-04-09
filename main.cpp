@@ -39,7 +39,11 @@ int main(){
    else
       cout << "PANIC" << endl;
 
-
+/* // Uncomment to print all possible next states (of next player)
+vector<game_state> children = generate_children(board, WHITE);
+for (auto i : children)
+   print_state(i);
+*/
 
    return 0;
 }
