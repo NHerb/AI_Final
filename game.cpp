@@ -70,7 +70,7 @@ int is_game_over(game_state board, int current_player){
    return -1;    // Game incomplete
 }
 
-// UNTESTED
+
 vector<game_state> generate_children(game_state board, int current_player){
    vector<game_state> list_of_children;
 
@@ -162,7 +162,7 @@ int human_move(game_state* board, int color){
       new_board.state[x1][y1] = EMPTY;
       if (new_board.state[x2][y2] == WHITE)
          new_board.white_remaining_pawns--;
-      if (new_board.state[x2][y2] == BLACK)
+      else if (new_board.state[x2][y2] == BLACK)
          new_board.black_remaining_pawns--;
       new_board.state[x2][y2] = color;
    }
