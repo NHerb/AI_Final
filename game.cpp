@@ -23,7 +23,7 @@ void init_board(game_state* board){
 
 
 void print_state(game_state board){
-   cout << endl;
+   cout << endl << endl << endl;
    cout << "White Pawns Remaining: " << board.white_remaining_pawns << endl;
    cout << "Black Pawns Remaining: " << board.black_remaining_pawns << endl;
    for (int i = 0; i < ROWS; i++){
@@ -143,11 +143,68 @@ vector<game_state> generate_children(game_state board, int current_player){
 }
 
 
-void human_move(game_state board){
+// Return -1 on invalid move
+int human_move(game_state* board, int color){
+   // Dumb thought for validating player input - let's just generate 
+   // child states and see if player's choice is one of those options
 
+   vector<game_state> children = generate_children(*board, color);
+   game_state new_board = *board;
+   int x1, y1, x2, y2;
+   cout << "Input start coord and end coord. Ex: 0 1 1 1)" << endl;
+   cin >> x1 >> y1 >> x2 >> y2;
+
+   // Check for segfault then make a state according to player input
+   if (x1 < 0 or x2 < 0 or y1 < 0 or y2 < 0 or x1 >= ROWS or x2 >= ROWS or y1 >= COLUMNS or y2 >= COLUMNS){
+      std::cout << "Input out of bounds!" << std::endl;
+      return -1;
+   } else {
+      new_board.state[x1][y1] = EMPTY;
+      if (new_board.state[x2][y2] == WHITE)
+         new_board.white_remaining_pawns--;
+      if (new_board.state[x2][y2] == BLACK)
+         new_board.black_remaining_pawns--;
+      new_board.state[x2][y2] = color;
+   }
+
+   // check if player's choice is one of the children states
+   bool is_valid_move = false;
+   for (auto i : children){
+      if (is_equal_state(new_board, i))
+         is_valid_move = true;
+   }
+
+   // If player made a valid move, then edit the pointer to the main game board to reflect the change
+   if (is_valid_move){
+      board->state[x1][y1] = EMPTY;
+      if (board->state[x2][y2] == WHITE)
+         board->white_remaining_pawns--;
+      if (board->state[x2][y2] == BLACK)
+         board->black_remaining_pawns--;
+      board->state[x2][y2] = color;       
+      return 0;
+   } else {
+      std::cout << "Invalid move!" << std::endl;
+      return -1;
+   }
 }
 
 
 void ai_move(game_state board){
 
+}
+
+
+bool is_equal_state(game_state board, game_state board2){
+
+   if (board.white_remaining_pawns != board2.white_remaining_pawns or board.black_remaining_pawns != board2.black_remaining_pawns)
+      return false;
+
+   for (int i = 0; i < ROWS; i++){
+      for (int j = 0; j < COLUMNS; j++){
+         if (board.state[i][j] != board2.state[i][j])
+            return false;
+      }
+   }
+   return true;
 }
