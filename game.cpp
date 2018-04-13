@@ -17,21 +17,17 @@ void init_board(game_state* board){
             board->state[j][i] = EMPTY;
       }
    }
-   board->white_remaining_pawns = STARTING_PAWNS;
-   board->black_remaining_pawns = STARTING_PAWNS;
 }
 
 
 void print_state(game_state board){
-   cout << endl << endl << endl;
-   cout << "White Pawns Remaining: " << board.white_remaining_pawns << endl;
-   cout << "Black Pawns Remaining: " << board.black_remaining_pawns << endl;
+   cout << endl;
    for (int i = 0; i < ROWS; i++){
       cout << "\t";
       for (int j = 0; j < COLUMNS; j++){
          cout << board.state[i][j] << " ";
       }
-      cout << endl << endl;
+      cout << endl;
    }
 }
 
@@ -39,12 +35,26 @@ void print_state(game_state board){
 // Return ID of winning player, 0 if draw, -1 if incomplete
 int is_game_over(game_state board, int current_player){
 
+
    // Win on capturing all enemy pawns
-   if (board.white_remaining_pawns == 0)
+   int white_remaining_pawns = 0;
+   int black_remaining_pawns = 0;
+
+   for (int i = 0; i < ROWS; i++){
+      for (int j = 0; j < COLUMNS; j++){
+         if (board.state[i][j] == WHITE)
+            white_remaining_pawns++;
+         else if (board.state[i][j] == BLACK)
+            black_remaining_pawns++;
+      }
+   }
+
+   if (white_remaining_pawns == 0)
       return BLACK;
-   else if (board.black_remaining_pawns == 0)
+   else if (black_remaining_pawns == 0)
       return WHITE;
    else;
+
 
    // Win on reaching opponent's starting row
    for (int i = 0; i < COLUMNS; i++)
@@ -72,72 +82,81 @@ int is_game_over(game_state board, int current_player){
 
 
 vector<game_state> generate_children(game_state board, int current_player){
+
    vector<game_state> list_of_children;
 
+   // Scan the state for all pawns of the current player.  For each of those pawns, check all its move
+   // possibilities - all that are valid update the current board with that move and are added to child list
    for (int i = 0; i < ROWS; i++){       
       for (int j = 0; j < COLUMNS; j++){
          game_state child;
-         child = board;
-         // check space for white/black - if there's a valid move, add and move one
+         set_equal(&child, board);
+
          if (board.state[i][j] == BLACK and current_player == BLACK){
+            // Black checks below for an empty space
             if (board.state[i+1][j] == EMPTY){         // Shouldn't go OOB - black can't reach bottom without winning (see above code)
                child.state[i][j] = EMPTY;
                child.state[i+1][j] = BLACK;
                list_of_children.push_back(child);
-            } else {
-               // Need to check for capture possibilities on valid moves
-               if (j != 0){
-                  // Check down-left space 
-                  if (board.state[i+1][j-1] == WHITE)
-                     child = board;
-                     child.state[i][j] = EMPTY;
-                     child.state[i+1][j-1] = BLACK;
-                     child.white_remaining_pawns--;
-                     list_of_children.push_back(child);
-               }
-               if (j != COLUMNS - 1){
-                  // Check down-right space
-                  if (board.state[i+1][j+1] == WHITE)
-                     child = board;
-                     child.state[i][j] = EMPTY;
-                     child.state[i+1][j+1] = BLACK;
-                     child.white_remaining_pawns--;
-                     list_of_children.push_back(child);
+
+               // There may be more valid moves for this child - reset it to initial state and keep checking
+               set_equal(&child, board);
+
+            }
+
+            // Black checks diagonally for capturing moves (don't check OOB)
+            if (j != 0){
+               // Check down-left space 
+               if (board.state[i+1][j-1] == WHITE){
+                  child.state[i][j] = EMPTY;
+                  child.state[i+1][j-1] = BLACK;
+                  list_of_children.push_back(child);
+                  set_equal(&child, board);
                }
             }
+            if (j != COLUMNS - 1){
+               // Check down-right space
+               if (board.state[i+1][j+1] == WHITE){
+                  child.state[i][j] = EMPTY;
+                  child.state[i+1][j+1] = BLACK;
+                  list_of_children.push_back(child);
+                  set_equal(&child, board);
+               }
+            }
+            
          } else if (board.state[i][j] == WHITE and current_player == WHITE){
             if (board.state[i-1][j] == EMPTY){          // Similarly, won't go OOB as white cannot reach botton without winning 
                child.state[i][j] = EMPTY;
                child.state[i-1][j] = WHITE;
                list_of_children.push_back(child);
-            } else {
-               // Check capture possibilities
-               if (j != 0){
-                  // Check up-left space 
-                  if (board.state[i-1][j-1] == WHITE)
-                     child = board;
-                     child.state[i][j] = EMPTY;
-                     child.state[i-1][j-1] = WHITE;
-                     child.black_remaining_pawns--;
-                     list_of_children.push_back(child);
-               }
-               if (j != COLUMNS - 1){
-                  // Check up-right space
-                  if (board.state[i-1][j+1] == WHITE)
-                     child = board;
-                     child.state[i][j] = EMPTY;
-                     child.state[i-1][j+1] = WHITE;
-                     child.black_remaining_pawns--;
-                     list_of_children.push_back(child);
-               }
 
+               // There may be more valid moves for this child - reset it to initial state and keep checking
+               set_equal(&child, board);
+
+            }
+
+            // Check capture possibilities
+            if (j != 0){
+               // Check up-left space 
+               if (board.state[i-1][j-1] == BLACK){
+                  child.state[i][j] = EMPTY;
+                  child.state[i-1][j-1] = WHITE;
+                  list_of_children.push_back(child);
+                  set_equal(&child, board);
+               }
+            }
+            if (j != COLUMNS - 1){
+               // Check up-right space
+               if (board.state[i-1][j+1] == BLACK){
+                  child.state[i][j] = EMPTY;
+                  child.state[i-1][j+1] = WHITE;
+                  list_of_children.push_back(child);
+                  set_equal(&child, board);
+               }
             }
          }
       }
    }
-
-
-
 
    return list_of_children;
 }
@@ -149,7 +168,10 @@ int human_move(game_state* board, int color){
    // child states and see if player's choice is one of those options
 
    vector<game_state> children = generate_children(*board, color);
-   game_state new_board = *board;
+//   game_state new_board = *board;
+   game_state new_board;
+   set_equal(&new_board, *board);
+
    int x1, y1, x2, y2;
    cout << "Input start coord and end coord. Ex: 0 1 1 1)" << endl;
    cin >> x1 >> y1 >> x2 >> y2;
@@ -160,10 +182,6 @@ int human_move(game_state* board, int color){
       return -1;
    } else {
       new_board.state[x1][y1] = EMPTY;
-      if (new_board.state[x2][y2] == WHITE)
-         new_board.white_remaining_pawns--;
-      else if (new_board.state[x2][y2] == BLACK)
-         new_board.black_remaining_pawns--;
       new_board.state[x2][y2] = color;
    }
 
@@ -177,10 +195,6 @@ int human_move(game_state* board, int color){
    // If player made a valid move, then edit the pointer to the main game board to reflect the change
    if (is_valid_move){
       board->state[x1][y1] = EMPTY;
-      if (board->state[x2][y2] == WHITE)
-         board->white_remaining_pawns--;
-      if (board->state[x2][y2] == BLACK)
-         board->black_remaining_pawns--;
       board->state[x2][y2] = color;       
       return 0;
    } else {
@@ -197,9 +211,6 @@ void ai_move(game_state board){
 
 bool is_equal_state(game_state board, game_state board2){
 
-   if (board.white_remaining_pawns != board2.white_remaining_pawns or board.black_remaining_pawns != board2.black_remaining_pawns)
-      return false;
-
    for (int i = 0; i < ROWS; i++){
       for (int j = 0; j < COLUMNS; j++){
          if (board.state[i][j] != board2.state[i][j])
@@ -207,4 +218,14 @@ bool is_equal_state(game_state board, game_state board2){
       }
    }
    return true;
+}
+
+
+void set_equal(game_state* target, game_state source){
+   for (int i = 0; i < ROWS; i++){
+      for (int j = 0; j < COLUMNS; j++){
+         target->state[i][j] = source.state[i][j];
+      }
+   }
+
 }
