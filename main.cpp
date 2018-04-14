@@ -31,13 +31,21 @@ int main(){
 
       print_state(board);
       cout << "White's turn." << endl;
-      while (human_move(&board, human_color_id) == -1);
+
+      if (human_color_id == WHITE)
+         while (human_move(&board, human_color_id) == -1);
+      else
+         ai_move(&board, ai_color_id, human_color_id);
+
       display_game_results(is_game_over(board, human_color_id), board);
 
 
       print_state(board);
       cout << "Black's turn." << endl;
-      ai_move(&board, ai_color_id, human_color_id);
+      if (human_color_id == BLACK)
+         while (human_move(&board, human_color_id) == -1);
+      else
+         ai_move(&board, ai_color_id, human_color_id);
       display_game_results(is_game_over(board, human_color_id), board);
 
    }
