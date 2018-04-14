@@ -49,20 +49,25 @@ int is_game_over(game_state board, int current_player){
       }
    }
 
-   if (white_remaining_pawns == 0)
+   if (white_remaining_pawns == 0){
       return BLACK;
-   else if (black_remaining_pawns == 0)
+   }
+   if (black_remaining_pawns == 0){
       return WHITE;
-   else;
+   }
 
 
    // Win on reaching opponent's starting row
-   for (int i = 0; i < COLUMNS; i++)
-      if (board.state[0][i] == WHITE)
+   for (int i = 0; i < COLUMNS; i++){
+      if (board.state[0][i] == WHITE){
          return WHITE;
-   for (int i = 0; i < COLUMNS; i++)
-      if (board.state[ROWS - 1][i] == BLACK)
+      }
+   }
+   for (int i = 0; i < COLUMNS; i++){
+      if (board.state[ROWS - 1][i] == BLACK){
          return BLACK;
+      }
+   }
 
 
 
@@ -71,10 +76,11 @@ int is_game_over(game_state board, int current_player){
    children = generate_children(board, current_player);
 
 
-   if (current_player == BLACK and children.size() == 0)
+   if (current_player == BLACK and children.size() == 0){
       return WHITE;
-   else if (current_player == WHITE and children.size() == 0)
+   } else if (current_player == WHITE and children.size() == 0){
       return BLACK;
+   }
 
 
    return -1;    // Game incomplete
@@ -168,7 +174,6 @@ int human_move(game_state* board, int color){
    // child states and see if player's choice is one of those options
 
    vector<game_state> children = generate_children(*board, color);
-//   game_state new_board = *board;
    game_state new_board;
    set_equal(&new_board, *board);
 
@@ -204,11 +209,6 @@ int human_move(game_state* board, int color){
 }
 
 
-void ai_move(game_state board){
-
-}
-
-
 bool is_equal_state(game_state board, game_state board2){
 
    for (int i = 0; i < ROWS; i++){
@@ -228,4 +228,74 @@ void set_equal(game_state* target, game_state source){
       }
    }
 
+}
+
+
+
+void ai_move(game_state* board, int ai_color, int human_color){
+
+   int best_choice_val = -10000;
+   game_state best_move;
+   vector<game_state> children = generate_children(*board, ai_color);
+//cout << endl << "I think my move scores are... ";                           // Uncomment this and below comment to see what AI thinks of its moves
+   for (auto i : children){
+      int temp = minimax(i, human_color, ai_color);
+//cout << temp << " ";                                                        // Same here
+      if (temp > best_choice_val){
+         best_choice_val = temp;
+         set_equal(&best_move, i);
+      }
+   }
+   // Best move is found, write that state to the board
+   set_equal(board, best_move);
+}
+
+
+int minimax(game_state board, int current_player, int ai_color){
+
+   // Base state: Game is concluded - return high score if AI wins, low if AI loses
+   int results = is_game_over(board, current_player);
+   if (results == ai_color)
+      return 1;
+   else if ((results == BLACK or results == WHITE) and results != ai_color)
+      return -1;
+   else if (results == 0)
+      return 0;
+
+   int next_player;
+   if (current_player == WHITE)
+      next_player = BLACK;
+   else
+      next_player = WHITE;
+ 
+   // Generate all next states, run minimax on each, return best result
+   vector<game_state> children = generate_children(board, current_player);
+   int temp = children.size();
+   int options[temp]; 
+   int iter = 0;
+   // Maximizing player
+   if (current_player == ai_color){
+      int best_val = -10000;
+      for (auto i : children){
+         options[iter] = minimax(i, next_player, ai_color);
+         if (options[iter] > best_val)
+            best_val = options[iter];
+         iter++;
+      }
+      return best_val;
+   }
+
+   // Minimizing player
+   else {
+      int best_val = 10000;
+      for (auto i : children){
+         int temp = minimax(i, next_player, ai_color);
+         if (temp < best_val)
+            best_val = temp;
+      }
+      return best_val;
+   }
+
+
+   return -99;
 }
