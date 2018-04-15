@@ -13,7 +13,7 @@ int main(){
    print_state(board);
    int human_color_id = -1;
    int ai_color_id = -1;
-
+   bool time_warning = true;
 
    while (human_color_id != WHITE and human_color_id != BLACK){
       cout << "Choose to be Player 1 (white, move first) or Player 2 (black, move second)." << endl;
@@ -34,8 +34,13 @@ int main(){
 
       if (human_color_id == WHITE)
          while (human_move(&board, human_color_id) == -1);
-      else
+      else {
+         if (time_warning){
+            cout << "AI is thinking... (this may take some time, please wait)" << endl;
+            time_warning = false;
+         }
          ai_move(&board, ai_color_id, human_color_id);
+      }
 
       display_game_results(is_game_over(board, human_color_id), board);
 
@@ -44,8 +49,13 @@ int main(){
       cout << "Black's turn." << endl;
       if (human_color_id == BLACK)
          while (human_move(&board, human_color_id) == -1);
-      else
+      else {
+         if (time_warning){
+            cout << "AI is thinking... (this may take some time, please wait)" << endl;
+            time_warning = false;
+         }
          ai_move(&board, ai_color_id, human_color_id);
+      }
       display_game_results(is_game_over(board, human_color_id), board);
 
    }
@@ -57,11 +67,11 @@ int main(){
 
 void display_game_results(int results, game_state board){
       if (results == WHITE){
-         cout << "White wins!" << endl;
+         cout << endl << "White wins!  Final board state below." << endl;
          print_state(board);
          exit(0);
       } else if (results == BLACK){
-         cout << "Black wins!" << endl;
+         cout << endl << "Black wins!  Final board state below." << endl;
          print_state(board);
          exit(0);
       } else if (results == -1)

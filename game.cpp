@@ -22,13 +22,21 @@ void init_board(game_state* board){
 
 void print_state(game_state board){
    cout << endl;
+   cout << "\t    COLUMN" << endl;
+   cout << "\t    ";
+   for (int i = 0; i < COLUMNS; i++) cout << i << " ";
+   cout << endl << "\t-------------" << endl;
    for (int i = 0; i < ROWS; i++){
-      cout << "\t";
+      if (i == ROWS / 2) cout << "ROW\t" << i << " | ";
+      else cout << "\t" << i << " | ";
       for (int j = 0; j < COLUMNS; j++){
-         cout << board.state[i][j] << " ";
+         if (board.state[i][j] == WHITE) cout << "W ";
+         else if (board.state[i][j] == BLACK) cout << "B ";
+         else cout << "- ";
       }
       cout << endl;
    }
+      cout << endl;
 }
 
 
@@ -110,6 +118,18 @@ vector<game_state> generate_children(game_state board, int current_player){
 
             }
 
+// Last minute addition!
+            // Black checks two spaces below if this is initial move
+            if (i == 0){
+               if (board.state[i+2][j] == EMPTY and board.state[i+1][j] == EMPTY){
+                  child.state[i][j] = EMPTY;
+                  child.state[i+2][j] = BLACK;
+                  list_of_children.push_back(child);
+                  set_equal(&child, board);
+               }
+            }
+// Last minute addition!
+
             // Black checks diagonally for capturing moves (don't check OOB)
             if (j != 0){
                // Check down-left space 
@@ -131,6 +151,7 @@ vector<game_state> generate_children(game_state board, int current_player){
             }
             
          } else if (board.state[i][j] == WHITE and current_player == WHITE){
+            // White checks above for empty space to move to
             if (board.state[i-1][j] == EMPTY){          // Similarly, won't go OOB as white cannot reach botton without winning 
                child.state[i][j] = EMPTY;
                child.state[i-1][j] = WHITE;
@@ -140,6 +161,18 @@ vector<game_state> generate_children(game_state board, int current_player){
                set_equal(&child, board);
 
             }
+
+// Last minute addition!
+            // White checks two spaces below if this is initial move
+            if (i == ROWS - 1){
+               if (board.state[i-2][j] == EMPTY and board.state[i-1][j] == EMPTY){
+                  child.state[i][j] = EMPTY;
+                  child.state[i-2][j] = WHITE;
+                  list_of_children.push_back(child);
+                  set_equal(&child, board);
+               }
+            }
+// Last minute addition!
 
             // Check capture possibilities
             if (j != 0){
@@ -252,6 +285,9 @@ void ai_move(game_state* board, int ai_color, int human_color){
 
 
 int minimax(game_state board, int current_player, int ai_color){
+//static int count = 0;
+//count++;
+//if (count % 10000 == 0) cout << count << endl;
 
    // Base state: Game is concluded - return high score if AI wins, low if AI loses
    int results = is_game_over(board, current_player);
